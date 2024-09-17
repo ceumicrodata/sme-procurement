@@ -4,14 +4,14 @@ FROM julia:1.10
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.11 and other dependencies
+# Install Python 3.11, DuckDB, and other dependencies
 RUN apt-get update && apt-get install -y \
     python3.11 \
     python3.11-venv \
     python3.11-dev \
     python3-pip \
     curl \
-    unzip \
+    duckdb \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Python 3.11 as the default python and python3 version
@@ -20,21 +20,14 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
     && update-alternatives --set python /usr/bin/python3.11 \
     && update-alternatives --set python3 /usr/bin/python3.11
 
-# Verify Python installation
-RUN python --version && python3 --version
+# Verify Python and DuckDB installations
+RUN python --version && python3 --version && duckdb --version
 
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # Add Poetry to PATH
 ENV PATH="/root/.local/bin:$PATH"
-
-# Install DuckDB 1.1.0
-RUN curl -L https://github.com/duckdb/duckdb/releases/download/v1.1.0/duckdb_cli-linux-amd64.zip -o duckdb.zip \
-    && unzip duckdb.zip \
-    && mv duckdb /usr/local/bin/duckdb \
-    && chmod +x /usr/local/bin/duckdb \
-    && rm duckdb.zip
 
 # Set up working directory
 WORKDIR /app
